@@ -5,6 +5,9 @@ use Carp;
 use JSON::Any qw/XS DWIW JSON/;
 use URI::Escape;
 use Net::Twitter::Error;
+use Data::Visitor::Callback;
+use Hash::AsObject;
+use Scalar::Util qw/reftype/;
 
 use namespace::autoclean;
 
@@ -69,6 +72,10 @@ sub _from_json {
     return eval { JSON::Any->from_json($json) };
 }
 
+my $visitor = Data::Visitor::Callback->new(
+    hash => sub { bless $_, 'Hash::AsObject' },
+);
+
 sub _parse_result {
     my ($self, $res) = @_;
 
@@ -83,8 +90,10 @@ sub _parse_result {
             : $content eq 'false' ? ''
             : $self->_from_json($content);
 
+    $visitor->visit($obj);
+
     # Twitter sometimes returns an error with status code 200
-    if ( $obj && ref $obj eq 'HASH' && exists $obj->{error} ) {
+    if ( $obj && ref $obj && reftype($obj) eq 'HASH' && exists $obj->{error} ) {
         die Net::Twitter::Error->new(twitter_error => $obj, http_response => $res);
     }
 

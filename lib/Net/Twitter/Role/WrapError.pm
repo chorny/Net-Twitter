@@ -9,7 +9,7 @@ has _http_response => ( isa => 'HTTP::Response', is => 'rw',
                             http_code    => 'code',
                         }
                       );
-has _twitter_error => ( isa => 'HashRef', is => 'rw', predicate => 'has_error',
+has _twitter_error => ( isa => 'Hash::AsObject', is => 'rw', predicate => 'has_error',
                         clearer => '_clear_error' );
 
 has _error_return_val => ( isa => 'Maybe[ArrayRef]', is => 'rw', default => undef );
@@ -34,8 +34,10 @@ around _parse_result => sub {
 
         $self->_twitter_error($@->has_twitter_error
             ? $@->twitter_error
-            : { error => "TWITTER RETURNED ERROR MESSAGE BUT PARSING OF JSON RESPONSE FAILED - "
-                         . $res->message }
+            : Hash::AsObject->new({
+                error => "TWITTER RETURNED ERROR MESSAGE BUT PARSING OF JSON RESPONSE FAILED - "
+                         . $res->message
+              })
         );
         $r = $self->_error_return_val;
     }
