@@ -34,6 +34,7 @@ requires    'namespace::autoclean'      => 0.09;
 requires    'Net::OAuth'                => 0.16;
 requires    'URI'                       => 1.40;
 requires    'URI::Escape';
+build_requires 'Test::More'             => 0.88; #done_testing is used
 
 # Don't rely on the JSON::Any requirement to pull in a suitable JSON backend.
 # The user may already have JSON::Any installed, but since removed all valid
